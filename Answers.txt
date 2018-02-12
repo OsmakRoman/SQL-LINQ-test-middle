@@ -1,0 +1,65 @@
+
+
+SELECT a.Id, a.Name, b.TotalQuantity FROM
+	(SELECT ProductId, SUM(Quantity) AS TotalQuantity FROM ProductSales
+	WHERE MONTH(Date) = '12' AND YEAR(Date) = 2016
+	GROUP BY ProductId) b
+JOIN Products a
+ON b.ProductId = a.Id
+WHERE b.TotalQuantity>1000
+
+
+-------------------------------------
+
+var selected = products
+                .Join(
+                productIds,
+                e => e.Id,
+                o => o,
+                (e, o) => new { Name = e.Name, Group = e.Group.Name });
+
+foreach (var item in selected)
+Console.WriteLine($"ProductName: {item.Name}, GroupName: {item.Group}");
+Console.ReadLine();
+
+----
+
+var selected = from pr in products
+               join prid in productIds on pr.Id equals prid
+               select new { Name = pr.Name, Group = pr.Group.Name };
+
+foreach (var item in selected)
+Console.WriteLine($"ProductName: {item.Name}, GroupName: {item.Group}");
+Console.ReadLine();
+
+-------------------------------------
+
+var selected = products
+               .GroupJoin(
+               groups,
+               e => e.GroupId,
+               o => o.Id,
+               (e, os) => os
+                   .DefaultIfEmpty()
+                   .Select(o => new
+                   { Name = e.Name, GroupName = o != null ? o.Name : "No Group" }))
+                       .SelectMany(r => r);
+
+foreach (var item in selected)
+Console.WriteLine($"ProductName: {item.Name}, GroupName: {item.GroupName}");
+Console.ReadLine();
+
+----
+
+var selected = from pr in products
+               join gr in groups on pr.GroupId equals gr.Id into pg
+               from sub in pg.DefaultIfEmpty()
+               select new { Name = pr.Name, GroupName = sub?.Name ?? "No Group" };
+
+foreach (var item in selected)
+Console.WriteLine($"ProductName: {item.Name}, GroupName: {item.GroupName}");
+Console.ReadLine();
+
+-------------------------------------
+
+
